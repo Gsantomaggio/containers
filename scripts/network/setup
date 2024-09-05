@@ -1,0 +1,25 @@
+#/bin/bash
+
+## Clean up the previous setup
+ip netns del blue 2>/dev/null
+ip netns del red 2>/dev/null
+
+
+## Create network namespaces
+ip netns add blue
+ip netns add red
+
+##Create two veth and link them
+ip link add veth-red type veth peer name veth-blue
+
+## associate the veth to the netns
+ip link set veth-blue netns blue
+ip link set veth-red netns red
+
+## Remeber to set UP the interfces
+ip -n red link set veth-red up
+ip -n blue link set veth-blue up
+
+## associate the IP(s) manually ... not a big deal
+ip -n red  addr add 192.168.15.1/30 dev veth-red
+ip -n blue addr add 192.168.15.2/30 dev veth-blue
