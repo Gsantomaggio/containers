@@ -23,3 +23,7 @@ ip -n blue link set veth-blue up
 ## associate the IP(s) manually ... not a big deal
 ip -n red  addr add 192.168.15.1/30 dev veth-red
 ip -n blue addr add 192.168.15.2/30 dev veth-blue
+
+
+ip  addr add 192.168.15.1/30 dev veth-red
+ip addr add 192.168.15.2/30 dev veth-blue
