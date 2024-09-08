@@ -16,7 +16,7 @@ $(OBJ): $(SRC) $(VMLINUX_H)
 	$(CC) $(CFLAGS) -c $< -o $@ || (echo "Error building eBPF program"; exit 1)  # Stop on error
 
 build_go: build_ebpf
-	go run ./main.go
+	go run ./main.go $(ARGS)
 
 clean:
 	rm -f $(OBJ)

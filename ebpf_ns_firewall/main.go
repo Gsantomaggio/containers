@@ -11,16 +11,21 @@ import (
 )
 
 func main() {
-	const networkInterface = "veth-red"
-	const XdpTcpObj = "./kernel_module/xdp_tcp.o"
-
+	args := os.Args
+	networkInterface := "lo"
 	slogOpts := &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}
 	log := slog.New(slog.NewTextHandler(os.Stdout, slogOpts))
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, os.Kill)
 
+	if len(args) != 2 {
+		log.Info("Usage: %s <network interface>", args[0])
+		return
+	} else {
+		networkInterface = args[1]
+	}
+
+	const XdpTcpObj = "./kernel_module/xdp_tcp.o"
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Error("failed to remove memlock: %v", err)
 	}
@@ -61,9 +66,11 @@ func main() {
 	}
 
 	log.Info("XDP firewall attached: ", "interface", ifce.Name, "port", value2)
-
-	defer l.Close()
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, os.Kill)
 
 	<-sig
+	l.Close()
+	log.Info("XDP firewall detached: ", "interface", ifce.Name)
 
 }
