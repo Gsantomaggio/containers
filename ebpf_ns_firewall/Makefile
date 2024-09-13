@@ -1,19 +1,24 @@
 CC := clang
 CFLAGS := -O2 -g -target bpf -I/usr/include -I/usr/src/linux-headers-$(shell uname -r)/include -D__BPF_TRACING__
-SRC := ./kernel_module/xdp_tcp.c
-OBJ := ./kernel_module/xdp_tcp.o
+SRC_FIREWALL := ./kernel_module/xdp_tcp_firewall.c
+OBJ_FIREWALL := ./kernel_module/xdp_tcp_firewall.o
 VMLINUX_H := ./kernel_module/vmlinux.h
 
+#SRC_TRACE := ./kernel_module/tcp_trace.c
+#OBJ_TRACE := ./kernel_module/tcp_trace.o
 
 all: build_ebpf build_go
 
-build_ebpf: $(VMLINUX_H) $(OBJ)
+build_ebpf: $(VMLINUX_H) $(OBJ_FIREWALL) $(OBJ_TRACE)
 
 $(VMLINUX_H):
 	bpftool btf dump file /sys/kernel/btf/vmlinux format c > $(VMLINUX_H)
 
-$(OBJ): $(SRC) $(VMLINUX_H)
+$(OBJ): $(SRC_FIREWALL) $(VMLINUX_H)
 	$(CC) $(CFLAGS) -c $< -o $@ || (echo "Error building eBPF program"; exit 1)  # Stop on error
+
+#$(OBJ): $(SRC_TRACE) $(VMLINUX_H)
+#	$(CC) $(CFLAGS) -c $< -o $@ || (echo "Error building eBPF program"; exit 1)  # Stop on error
 
 build_go: build_ebpf
 	go run ./main.go $(ARGS)

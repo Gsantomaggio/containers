@@ -62,4 +62,26 @@ SEC("xdp") int xdp_tcp_firewall(struct xdp_md *ctx) {
 }
 
 
+struct event {
+    __u32 saddr;
+    __u32 daddr;
+    __u16 sport;
+    __u16 dport;
+};
+
+struct {
+    __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+    __uint(key_size, sizeof(int));
+    __uint(value_size, sizeof(int));
+} events SEC(".maps");
+
+
+SEC("kprobe/__x64_sys_tcp_connect")
+int kprobe__tcp_connect(struct pt_regs *ctx)
+{
+   bpf_printk("[ebpf firewall] tcp_connect: %d \n", 0);
+   return 0;
+
+}
+
 char _license[] SEC("license") = "GPL";

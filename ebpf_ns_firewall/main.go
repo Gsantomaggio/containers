@@ -19,20 +19,19 @@ func main() {
 	log := slog.New(slog.NewTextHandler(os.Stdout, slogOpts))
 
 	if len(args) != 2 {
-		log.Info("Usage: %s <network interface>", args[0])
-		return
+		log.Info("Usage: %s <network interface>, but %s will used", args[0], networkInterface)
 	} else {
 		networkInterface = args[1]
 	}
 
-	const XdpTcpObj = "./kernel_module/xdp_tcp.o"
+	const XdpTcpFirewall = "./kernel_module/xdp_tcp_firewall.o"
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Error("failed to remove memlock: %v", err)
 	}
 
-	spec, err := ebpf.LoadCollectionSpec(XdpTcpObj)
+	spec, err := ebpf.LoadCollectionSpec(XdpTcpFirewall)
 	if err != nil {
-		log.Error("Error loading eBPF object file", "file", XdpTcpObj, "error", err)
+		log.Error("Error loading eBPF object file", "file", XdpTcpFirewall, "error", err)
 		return
 	}
 
@@ -41,7 +40,7 @@ func main() {
 		log.Error("Error creating eBPF collection", "error", err)
 		return
 	}
-	log.Info("eBPF object file loaded. ", "file", XdpTcpObj)
+	log.Info("eBPF object file loaded. ", "file", XdpTcpFirewall)
 
 	ifce, err := net.InterfaceByName(networkInterface)
 	if err != nil {
@@ -58,6 +57,15 @@ func main() {
 		log.Error("error", "failed to attach XDP program", "err", err)
 	}
 
+	//l2, err2 := link.Kprobe("tcp_v4_connect", coll.Programs["kprobe__tcp_v4_connect"])
+	l2, err2 := link.Kprobe("tcp_connect", coll.Programs["kprobe__tcp_connect"], nil)
+	if err != nil {
+		return
+	}
+	if err2 != nil {
+		log.Error("error", "failed to attach XDP program", "err", err2)
+	}
+
 	var value2 uint64
 	value2 = 5552
 
@@ -71,6 +79,7 @@ func main() {
 
 	<-sig
 	l.Close()
+	l2.Close()
 	log.Info("XDP firewall detached: ", "interface", ifce.Name)
 
 }
