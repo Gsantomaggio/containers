@@ -15,11 +15,12 @@ A modern Linux distribution. Tested on Fedora VERSION="40 (Server Edition)".
   the namespaces of a process. Default value is 4026531836.
 * Check where the PID is running: `ls /proc/$$/ns -al`
 * Run the golang program `scripts/1_get_my_pid/main.go` to get the PID of the process.
-* Let's get the PID ` pidof main.go`
+* Let's get the PID ` pidof main`
 * Check the namespaces of the process `pidof main | xargs -n1 lsns -p`
 
 
 #### PID namespace let's create my first container
+*  Let's watch the pid namespaces `watch lsns -t pid`
 
 * Let's create a new PID namespace: `unshare -fp --mount-proc zsh`
 * Check the namespaces of the process `lsns -p $$`
