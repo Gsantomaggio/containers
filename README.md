@@ -45,14 +45,16 @@ A modern Linux distribution. Tested on Fedora VERSION="40 (Server Edition)".
 * Execute the command to one terminal `unshare -f -p -n -u --mount-proc /bin/zsh`
 * Set hostname `hostname blue`
 * Get the net PID of the process `lsns -t net` and get the PID-BLUE
+* 
 * Execute the command to second terminal `unshare -f -p -n -u --mount-proc /bin/zsh`
 * Set hostname `hostname red`
-* Get the net PID of the process `lsns -t net` and get the PID-RED
+* From the root: Get the net PID of the process `lsns -t net` and get the PID-RED
 
 * ip link set veth-blue netns PID-BLUE
 * ip link set veth-red netns PID-RED
 * ip link set veth-red up
 * ip link set veth-blue up
+* 
 * ip addr add 192.168.15.1/30 dev veth-red
 * ip addr add 192.168.15.2/30 dev veth-blue
 * from the red `nc -lv 5552`
