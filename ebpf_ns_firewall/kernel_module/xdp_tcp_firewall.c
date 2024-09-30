@@ -62,26 +62,37 @@ SEC("xdp") int xdp_tcp_firewall(struct xdp_md *ctx) {
 }
 
 
-struct event {
-    __u32 saddr;
-    __u32 daddr;
-    __u16 sport;
-    __u16 dport;
-};
+SEC("xdp_redirect")
+int xdp_redirect_prog(struct xdp_md *ctx) {
+    void *data_end = (void *)(long)ctx->data_end;
+    void *data = (void *)(long)ctx->data;
 
-struct {
-    __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
-    __uint(key_size, sizeof(int));
-    __uint(value_size, sizeof(int));
-} events SEC(".maps");
+    // Parse Ethernet header
+    struct ethhdr *eth = data;
+    if ((void *)(eth + 1) > data_end)
+        return XDP_PASS;
 
+    // Parse IP header
+    struct iphdr *ip = data + sizeof(*eth);
+    if ((void *)(ip + 1) > data_end)
+        return XDP_PASS;
 
-SEC("kprobe/__x64_sys_tcp_connect")
-int kprobe__tcp_connect(struct pt_regs *ctx)
-{
-   bpf_printk("[ebpf firewall] tcp_connect: %d \n", 0);
-   return 0;
+    // Only consider IPv4 packets
+    if (eth->h_proto != bpf_htons(ETH_P_IP))
+        return XDP_PASS;
 
+    // Only consider TCP packets
+    if (ip->protocol != IPPROTO_TCP)
+        return XDP_PASS;
+
+    // Calculate destination interface index for redirection (e.g., `ifindex = 2`)
+    // You'll need to set this appropriately for your setup.
+    int ifindex = 2;  // Replace with the index of the target virtual Ethernet interface
+
+    // Redirect the packet to the new interface
+    return bpf_redirect(ifindex, 0);
 }
+
+
 
 char _license[] SEC("license") = "GPL";

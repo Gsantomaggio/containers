@@ -8,20 +8,23 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 )
 
 func main() {
 	args := os.Args
 	networkInterface := "lo"
+	port := uint64(5552)
 	slogOpts := &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}
 	log := slog.New(slog.NewTextHandler(os.Stdout, slogOpts))
 
-	if len(args) != 2 {
-		log.Info("Usage: %s <network interface>, but %s will used", args[0], networkInterface)
+	if len(args) != 3 {
+		log.Info("Usage: <network interface> <port>, but %s, %d will used", networkInterface, port)
 	} else {
 		networkInterface = args[1]
+		port, _ = strconv.ParseUint(args[2], 10, 64)
 	}
 
 	const XdpTcpFirewall = "./kernel_module/xdp_tcp_firewall.o"
@@ -58,28 +61,28 @@ func main() {
 	}
 
 	//l2, err2 := link.Kprobe("tcp_v4_connect", coll.Programs["kprobe__tcp_v4_connect"])
-	l2, err2 := link.Kprobe("tcp_connect", coll.Programs["kprobe__tcp_connect"], nil)
-	if err != nil {
-		return
-	}
-	if err2 != nil {
-		log.Error("error", "failed to attach XDP program", "err", err2)
-	}
+	//l2, err2 := link.Kprobe("tcp_connect", coll.Programs["kprobe__tcp_connect"], nil)
+	//if err != nil {
+	//	return
+	//}
+	//if err2 != nil {
+	//	log.Error("error", "failed to attach XDP program", "err", err2)
+	//}
 
-	var value2 uint64
-	value2 = 5552
+	//var value2 uint64
+	//value2 = 5552
 
-	if err := coll.Maps["port_filter"].Put(uint32(0), &value2); err != nil {
+	if err := coll.Maps["port_filter"].Put(uint32(0), &port); err != nil {
 		log.Error("failed to lookup map: %v", err)
 	}
 
-	log.Info("XDP firewall attached: ", "interface", ifce.Name, "port", value2)
+	log.Info("XDP firewall attached: ", "interface", ifce.Name, "port", port)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, os.Kill)
 
 	<-sig
 	l.Close()
-	l2.Close()
+	//l2.Close()
 	log.Info("XDP firewall detached: ", "interface", ifce.Name)
 
 }

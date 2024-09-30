@@ -64,6 +64,17 @@ A modern Linux distribution. Tested on Fedora VERSION="40 (Server Edition)".
 * Try nc with another port `nc -lv 5553` and `telnet` again
 
 
+
+#### let's create my Control Group
+
+* `go run scripts/leak/3_create_leak.go`
+* mkdir /sys/fs/cgroup/limitapps
+* echo "100M" >/sys/fs/cgroup/limitapps/memory.max && 
+echo "100M" >/sys/fs/cgroup/limitapps/memory.swap.high && 
+echo "100M" >/sys/fs/cgroup/limitapps/memory.swap.max
+* echo $(pidof 3_create_leak) >/sys/fs/cgroup/limitapps/cgroup.procs
+* dmesg | tail -n1
+
 #### [SKIP] UTS namespace let's create my first container
 
 * Let's create a new UTS namespace: `unshare -fn zsh`
