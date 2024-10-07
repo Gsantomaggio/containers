@@ -53,7 +53,6 @@ SEC("xdp") int xdp_tcp_firewall(struct xdp_md *ctx) {
             return XDP_PASS;
         } else {
             bpf_printk("[ebpf firewall] packets to port: %d will be dropped. \n", *value);
-
             return XDP_DROP;
         }
 
