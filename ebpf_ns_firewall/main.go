@@ -60,18 +60,6 @@ func main() {
 		log.Error("error", "failed to attach XDP program", "err", err)
 	}
 
-	//l2, err2 := link.Kprobe("tcp_v4_connect", coll.Programs["kprobe__tcp_v4_connect"])
-	//l2, err2 := link.Kprobe("tcp_connect", coll.Programs["kprobe__tcp_connect"], nil)
-	//if err != nil {
-	//	return
-	//}
-	//if err2 != nil {
-	//	log.Error("error", "failed to attach XDP program", "err", err2)
-	//}
-
-	//var value2 uint64
-	//value2 = 5552
-
 	if err := coll.Maps["port_filter"].Put(uint32(0), &port); err != nil {
 		log.Error("failed to lookup map: %v", err)
 	}
