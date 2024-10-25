@@ -36,6 +36,7 @@ int trace_openat(struct sys_enter_openat_args* ctx) {
     if (filename == NULL) {
         return 0;
     }
+    // won't send all the data
     bpf_get_current_comm(&data.comm, sizeof(data.comm));
     bpf_probe_read_user_str(&data.filename, sizeof(data.filename), filename);
         // Send the data to userspace

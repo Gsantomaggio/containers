@@ -40,3 +40,39 @@ strace ls
 
 
 
+
+
+
+nsenter --mount=/proc/66148/ns/mnt --net=/proc/66148/ns/net --uts=/proc/66148/ns/uts --pid=/proc/66148/ns/pid /bin/zsh
+
+
+
+
+nsenter --net=/proc/$PIDRED/ns/net --uts=/proc/$PIDRED/ns/uts -t $PIDRED zsh
+
+
+
+nsenter --pid=/proc/$PIDRED/ns/pid zsh
+
+nsenter --pid=/proc/3225/ns/pid /bin/zsh
+
+
+bpftrace -l 'tracepoint:syscalls:sys_enter_open*'
+
+
+ bpftrace -e 'tracepoint:syscalls:sys_enter_openat { printf("%s %s\n", comm, str(args->filename)); }'
+
+
+ bpftrace -e 'tracepoint:syscalls:sys_enter_execve{ printf("%s %s\n", comm, str(args->filename)); }'
+
+
+ bpftrace -e 'tracepoint:syscalls:sys_enter_openat { printf("%s %s %d\n", comm, str(args->filename),args->flags); }'
+
+
+
+
+bpftrace -e 'tracepoint:syscalls:sys_enter_openat { printf("%s %s\n", comm, str(args->filename)); }' | grep "test*"
+
+
+
+ip link add veth-red type veth peer name veth-blue
