@@ -1,0 +1,18 @@
+[package]
+name = "ebpf_rust_firewall-ebpf"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ebpf_rust_firewall-common = { path = "../ebpf_rust_firewall-common" }
+
+aya-ebpf = { workspace = true }
+aya-log-ebpf = { workspace = true }
+
+[build-dependencies]
+which = { workspace = true }
+xtask = { path = "../xtask" }
+
+[[bin]]
+name = "ebpf_rust_firewall"
+path = "src/main.rs"
