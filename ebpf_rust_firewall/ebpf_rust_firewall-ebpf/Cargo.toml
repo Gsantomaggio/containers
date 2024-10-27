@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 ebpf_rust_firewall-common = { path = "../ebpf_rust_firewall-common" }
+network-types = "0.0.7"
 
 aya-ebpf = { workspace = true }
 aya-log-ebpf = { workspace = true }

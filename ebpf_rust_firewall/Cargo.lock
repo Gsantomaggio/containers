@@ -372,6 +372,7 @@ dependencies = [
  "aya-ebpf",
  "aya-log-ebpf",
  "ebpf_rust_firewall-common",
+ "network-types",
  "which",
  "xtask",
 ]
@@ -527,6 +528,12 @@ dependencies = [
  "wasi",
  "windows-sys 0.52.0",
 ]
+
+[[package]]
+name = "network-types"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e82e9f64c09f56aa7c80c3fa087997bd99a913f91d9c74d36cf5fd75dd5773e6"
 
 [[package]]
 name = "num_enum"
