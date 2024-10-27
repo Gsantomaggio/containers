@@ -6,7 +6,7 @@
 use aya_ebpf::{
     bindings::xdp_action,
     macros::{map, xdp},
-    // maps::HashMap,
+    maps::HashMap,
     programs::XdpContext,
 };
 use aya_log_ebpf::info;
@@ -19,6 +19,12 @@ use network_types::{
     // ip::Ipv4Hdr,
 };
 use network_types::tcp::TcpHdr;
+
+
+#[map] // (1)
+static BLOCKLIST: HashMap<u16, u16> =
+    HashMap::<u16, u16>::with_max_entries(1024, 0);
+
 
 #[xdp]
 pub fn ebpf_rust_firewall(ctx: XdpContext) -> u32 {
@@ -33,11 +39,9 @@ unsafe fn ptr_at<T>(ctx: &XdpContext, offset: usize) -> Result<*const T, ()> {
     let start = ctx.data();
     let end = ctx.data_end();
     let len = mem::size_of::<T>();
-
     if start + offset + len > end {
         return Err(());
     }
-
     let ptr = (start + offset) as *const T;
     Ok(&*ptr)
 }
@@ -45,8 +49,7 @@ unsafe fn ptr_at<T>(ctx: &XdpContext, offset: usize) -> Result<*const T, ()> {
 
 // (2)
 fn block_port(port: u16) -> bool {
-    port == 5552
-    // unsafe { BLOCKLIST.get(&address).is_some() }
+    unsafe { BLOCKLIST.get(&port).is_some() }
 }
 
 
