@@ -92,10 +92,10 @@ func main() {
 
 			// Parse the data received from kernel space
 			//var event dataT
+			/// Important the order
 			event := dataT{}
 			err = binary.Read(bytes.NewReader(record.RawSample), binary.LittleEndian, &event)
 			if err != nil {
-				//llog.Error("Error unmarshalling data", "error", err)
 				continue
 			}
 
