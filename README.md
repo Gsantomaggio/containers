@@ -48,6 +48,8 @@ A modern Linux distribution. Tested on Fedora VERSION="40 (Server Edition)".
 * ip link set veth-blue netns PID-BLUE
 * ip addr add 192.168.15.2/30 dev veth-blue
 * ip link set veth-blue up
+* PS1='$(uname -n)~: '
+
 
 * 
 * Execute the command to second terminal `unshare -f -p -n -u --mount-proc /bin/zsh`
