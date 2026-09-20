@@ -14,12 +14,13 @@ use aya_log_ebpf::info;
 
 use core::mem;
 use network_types::{
-    // eth::{EthHdr, EtherType},
     eth::{EthHdr, EtherType},
-    // ip::Ipv4Hdr,
+    ip::Ipv4Hdr,
 };
 use network_types::tcp::TcpHdr;
 
+// RFC 791: IHL counts 32-bit words, not bytes.
+const IPV4_WORD_LEN: usize = 4;
 
 #[map] // (1)
 static BLOCKLIST: HashMap<u16, u16> =
@@ -59,7 +60,14 @@ fn try_ebpf_rust_firewall(ctx: XdpContext) -> Result<u32, ()> {
         EtherType::Ipv4 => {}
         _ => return Ok(xdp_action::XDP_PASS),
     }
-    let tcp4Header: *const TcpHdr = unsafe { ptr_at(&ctx, EthHdr::LEN + TcpHdr::LEN)? };
+    let ipv4hdr: *const Ipv4Hdr = unsafe { ptr_at(&ctx, EthHdr::LEN)? };
+    let ihl = unsafe { (*ipv4hdr).ihl() } as usize;
+    if ihl < Ipv4Hdr::LEN / IPV4_WORD_LEN {
+        return Err(());
+    }
+    let ipv4_header_len = ihl * IPV4_WORD_LEN;
+
+    let tcp4Header: *const TcpHdr = unsafe { ptr_at(&ctx, EthHdr::LEN + ipv4_header_len)? };
     let dest = u16::from_be(unsafe { (*tcp4Header).dest });
 
     // (3)
